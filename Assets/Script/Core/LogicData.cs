@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class LogicNodeBase : MonoBehaviour {
+public class LogicData : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
