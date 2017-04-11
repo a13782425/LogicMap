@@ -1,15 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
-public class LogicData : MonoBehaviour {
+public class LogicData
+{
+    public LogicObject LogicContainer;
+    public Dictionary<int, LogicValue> ValueDic;
+    public bool IsProcess { get { return LogicContainer.IsProcess; } }
+    public LogicValue this[int guid] { get { return ValueDic[guid]; } }
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    public LogicData() { }
+
+    public LogicData(LogicObject logicContainer)
+    {
+        this.LogicContainer = logicContainer;
+        ValueDic = logicContainer.Value.ToDictionary(x => x.TargetIndex);
+    }
+
+    public bool ContainsKey(int guid)
+    {
+        return ValueDic.ContainsKey(guid);
+    }
 }
