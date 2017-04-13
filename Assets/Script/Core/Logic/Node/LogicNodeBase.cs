@@ -155,7 +155,7 @@ public class LogicNodeBase : ScriptableObject
         return GetMyRect().Contains(mousePoint);
     }
 
-    private Rect GetMyRect()
+    protected virtual Rect GetMyRect()
     {
         return new Rect(Pos.x - HalfSize.x, Pos.y - HalfSize.y, HalfSize.x * 2, HalfSize.y * 2);
     }

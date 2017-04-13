@@ -1,15 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
-public class LogicNodeAttrbute : MonoBehaviour {
-
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+[AttributeUsage(AttributeTargets.Class)]
+public class LogicNodeAttribute : Attribute
+{
+    public string MenuText;
+    public LogicNodeAttribute(string menuText)
+    {
+        this.MenuText = menuText;
+    }
 }
