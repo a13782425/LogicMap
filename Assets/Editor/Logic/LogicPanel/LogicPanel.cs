@@ -9,7 +9,9 @@ public class LogicPanel : EditorWindow
     public static LogicObject logicObject;
 
     public Vector3 scroll;
-    public Rect rect = new Rect(0, 0, 2000, 2000);
+    public float logicHeight = 2000;
+    public float logicWidth = 2000;
+    public Rect logicRect;
 
     public LogicNodeBase moveSelect, logicSelect, linkSelect;
     private Vector3 offset = Vector3.zero;
@@ -66,13 +68,16 @@ public class LogicPanel : EditorWindow
         if (logicBox == null)
             return;
         EditorGUIUtility.labelWidth = 60;
-        Rect windowRect = new Rect(20, 20, position.width - 40, position.height - 80);
+        Rect windowRect = new Rect(20, 20, position.width - 40, position.height - 60);
         mousePos = Event.current.mousePosition;
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("逻辑图:" + logicBox.name);
         GUILayout.Space(40);
         LogicObject tempObj = EditorGUILayout.ObjectField("物体", logicObject, typeof(LogicObject), true, GUILayout.Width(200)) as LogicObject;
+        logicWidth = EditorGUILayout.FloatField("宽:", logicWidth);
+        logicHeight = EditorGUILayout.FloatField("高:", logicHeight);
+        logicRect = new Rect(0, 0, logicWidth, logicHeight);
         if (tempObj != logicObject)
             ShowLogicMap(tempObj);
         GUILayout.FlexibleSpace();
@@ -82,7 +87,7 @@ public class LogicPanel : EditorWindow
             return;
 
         GUILayout.BeginArea(windowRect, "", "box");
-        scroll = GUI.BeginScrollView(new Rect(0, 0, position.width - 40, position.height - 80), scroll, rect);
+        scroll = GUI.BeginScrollView(new Rect(0, 0, position.width - 40, position.height - 60), scroll, logicRect);
         logicBox.OnGUI();
 
         GUI.EndScrollView();
@@ -112,13 +117,13 @@ public class LogicPanel : EditorWindow
         if (logicSelect != null && evt.type == EventType.KeyUp && evt.keyCode == KeyCode.Delete)
             RemoveNode(logicSelect);
 
-        GUILayout.BeginArea(new Rect(0, position.height - 60, position.width, 60));
-
+        GUILayout.BeginArea(new Rect(0, position.height - 40, position.width, 60));
+        GUILayout.BeginVertical();
         GUILayout.Label(AssetDatabase.GetAssetPath(logicBox));
 
         if (GUILayout.Button("另存为模板"))
             SaveAsTemplate();
-
+        GUILayout.EndVertical();
         GUILayout.EndArea();
 
     }
@@ -178,7 +183,22 @@ public class LogicPanel : EditorWindow
         menu.AddSeparator("");
         menu.AddItem(new GUIContent("选择节点"), false, () => Selection.activeObject = logicSelect);
         if (!(logicSelect is StartNode))
+        {
             menu.AddItem(new GUIContent("删除" + logicSelect.ShowName), false, () => RemoveNode(logicSelect));
+            menu.AddItem(new GUIContent("打开脚本"), false, () =>
+            {
+                string[] guids = AssetDatabase.FindAssets(logicSelect.GetType().Name);
+                if (guids.Length != 1)
+                {
+                    Debug.LogError("guids存在多个");
+                }
+                else
+                {
+                    AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guids[0]), typeof(UnityEngine.Object)), -1);
+                }
+                //AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(textBuffer.guid), typeof(UnityEngine.Object)), caretPosition.line + 1);
+            });
+        }
     }
 
     private void Add(LogicNodeBase node)
@@ -206,7 +226,7 @@ public class LogicPanel : EditorWindow
 
         logicSelect = null;
 
-        logicBox.LogicNodeList.ForEach(x => { if (x.OnDetectRect(detectPos))crtSelect = x; });
+        logicBox.LogicNodeList.ForEach(x => { if (x.OnDetectRect(detectPos)) crtSelect = x; });
         if (logicBox.startNode.OnDetectRect(detectPos))
             logicSelect = logicBox.startNode;
 
@@ -222,6 +242,12 @@ public class LogicPanel : EditorWindow
             offset = (Vector3)moveSelect.Pos - mousePos;
         }
         linkSelect = null;
+    }
+
+
+    private void Update()
+    {
+        Repaint();
     }
 
 }

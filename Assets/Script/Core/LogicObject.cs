@@ -71,6 +71,11 @@ public class LogicObject : LogicObjectBase
         SetValue();
         data = new LogicData(this);
         CurrentLogicBox.Init(data);
+        if (this.AutoStart)
+        {
+            this.IsProcess = true;
+            this.CurrentLogicBox.startNode.Begin(data);
+        }
     }
 
 }

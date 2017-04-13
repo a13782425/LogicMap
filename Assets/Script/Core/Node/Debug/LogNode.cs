@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[LogicNode("添加 Debug/打印日志")]
+[LogicNode("Debug/打印日志")]
 public class LogNode : LogicNodeBase
 {
     public string log = "触发";

@@ -7,6 +7,7 @@ using UnityEditor;
 public class LogicNodeBase : ScriptableObject
 {
     public int Guid = 0;
+
     public string ShowName = "逻辑节点";
     public string Common = "";
 
@@ -34,7 +35,7 @@ public class LogicNodeBase : ScriptableObject
     }
     public virtual void Init(LogicData data)
     {
-        Link.ForEach(x => { if (x == null)Debug.LogError("node " + ShowName + " has null link", this); });
+        Link.ForEach(x => { if (x == null) Debug.LogError("node " + ShowName + " has null link", this); });
     }
 
     public virtual void OnEnable() { }
@@ -54,7 +55,7 @@ public class LogicNodeBase : ScriptableObject
     public void Continue(List<LogicNodeBase> nodeLink, LogicData data)
     {
         if (data.IsProcess && (nodeLink != null))
-            nodeLink.ForEach(x => { if (x != null)x.Begin(data); });
+            nodeLink.ForEach(x => { if (x != null) x.Begin(data); });
 #if UNITY_EDITOR
         else
             Debug.LogWarning("执行错误：" + data.LogicContainer.name, data.LogicContainer);
@@ -205,19 +206,23 @@ public class LogicNodeBase : ScriptableObject
     public void DrawLinkEach(Color c, params LogicNodeBase[] nodes)
     {
         Handles.color = c;
-        Loop.Count(nodes.Length).Do(x => { if (nodes[x] != null)DrawArrowTo(nodes[x]); });
+        Loop.Count(nodes.Length).Do(x => { if (nodes[x] != null) DrawArrowTo(nodes[x]); });
         Handles.color = Color.white;
     }
 
 
     public void DeleteLinkMenu<T>(List<T> nodes, UnityEditor.GenericMenu menu, string title) where T : LogicNodeBase
     {
+        if (nodes.Count == 0)
+            return;
         menu.AddSeparator("");
         nodes.ForEach(x => menu.AddItem(new GUIContent(title + "/" + x.ShowName), false, () => nodes.Remove(x)));
     }
 
     public void DeleteLinkMenuAndReLink<T>(List<T> nodes, UnityEditor.GenericMenu menu, string title, Action act) where T : LogicNodeBase
     {
+        if (nodes.Count == 0)
+            return;
         menu.AddSeparator("");
         nodes.ForEach(x => menu.AddItem(new GUIContent(title + "/" + x.ShowName), false, () => { nodes.Remove(x); act(); }));
     }
