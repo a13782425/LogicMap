@@ -20,7 +20,11 @@ public class LogicObject : LogicObjectBase
     public static void TerminateAll()
     {
         UnityEngine.Object[] logicObj = UnityEngine.Object.FindObjectsOfType(typeof(LogicObject));
-        Loop.ForEach<UnityEngine.Object>(logicObj, x => (x as LogicObject).Terminate());
+        int length = logicObj.Length;
+        for (int i = 0; i < length; i++)
+        {
+            (logicObj[i] as LogicObject).Terminate();
+        }
     }
 
     public void SetValue()

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 
 public class LogicData
 {
@@ -15,7 +15,18 @@ public class LogicData
     public LogicData(LogicObject logicContainer)
     {
         this.LogicContainer = logicContainer;
-        ValueDic = logicContainer.Value.ToDictionary(x => x.TargetIndex);
+        foreach (LogicValue item in logicContainer.Value)
+        {
+            if (!ValueDic.ContainsKey(item.GUID))
+            {
+                ValueDic.Add(item.GUID, item);
+            }
+            else
+            {
+                Debug.LogError("重复的Key");
+            }
+        }
+        //ValueDic = logicContainer.Value.ToDictionary(x => x.TargetIndex);
     }
 
     public bool ContainsKey(int guid)

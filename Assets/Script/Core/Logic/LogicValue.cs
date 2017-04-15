@@ -10,7 +10,7 @@ public class LogicValue
 
     public Object Obj;
 
-    public int TargetIndex = -1;
+    public int GUID = -1;
 
     public bool HasData { get { return data != null; } }
 

@@ -77,7 +77,7 @@ public class LogicNodeBase : ScriptableObject
         if (!HasValue)
             return;
         logicValue = OnGetValue();
-        logicValue.TargetIndex = this.Guid;
+        logicValue.GUID = this.Guid;
     }
 
     public virtual void OnTerminated(LogicData data) { }
@@ -211,7 +211,14 @@ public class LogicNodeBase : ScriptableObject
     public void DrawLinkEach(Color c, params LogicNodeBase[] nodes)
     {
         Handles.color = c;
-        Loop.Count(nodes.Length).Do(x => { if (nodes[x] != null) DrawArrowTo(nodes[x]); });
+        if (nodes != null && nodes.Length > 0)
+        {
+            int length = nodes.Length;
+            for (int i = 0; i < length; i++)
+            {
+                if (nodes[i] != null) DrawArrowTo(nodes[i]);
+            }
+        }
         Handles.color = Color.white;
     }
 

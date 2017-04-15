@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using System.Linq;
+//using System.Linq;
 public class LogicBox : ScriptableObject
 {
     public List<LogicNodeBase> LogicNodeList = new List<LogicNodeBase>();
@@ -35,13 +35,25 @@ public class LogicBox : ScriptableObject
 
     public void OnSetValue(List<LogicValue> logicValue)
     {
-        Dictionary<int, LogicNodeBase> dic = LogicNodeList.ToDictionary(x => x.Guid);
+        Dictionary<int, LogicNodeBase> dic = new Dictionary<int, LogicNodeBase>();
+        foreach (LogicNodeBase item in LogicNodeList)
+        {
+            if (!dic.ContainsKey(item.Guid))
+            {
+                dic.Add(item.Guid, item);
+            }
+            else
+            {
+                Debug.LogError("重复的Key");
+            }
+        }
+        //Dictionary<int, LogicNodeBase> dic = LogicNodeList.ToDictionary(x => x.Guid);
         List<LogicValue> removeList = new List<LogicValue>();
 
         logicValue.ForEach(x =>
         {
-            if (dic.ContainsKey(x.TargetIndex))
-                dic[x.TargetIndex].SetValue(x);
+            if (dic.ContainsKey(x.GUID))
+                dic[x.GUID].SetValue(x);
             else
                 removeList.Add(x);
         });

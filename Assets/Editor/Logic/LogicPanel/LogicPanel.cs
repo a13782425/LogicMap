@@ -24,7 +24,7 @@ public class LogicPanel : EditorWindow
 
     public static void ShowLogicMap(LogicObject logic)
     {
-        EditorWindow.GetWindow(typeof(LogicPanel)).title = "逻辑图";
+        EditorWindow.GetWindow(typeof(LogicPanel)).titleContent = new GUIContent("逻辑图");
         logicObject = logic;
         if (!Application.isPlaying)
             logic.SetValue();
@@ -40,7 +40,7 @@ public class LogicPanel : EditorWindow
     [MenuItem("Tools/窗口 &4", false, 4)]
     public static void Open()
     {
-        EditorWindow.GetWindow(typeof(LogicPanel)).title = "逻辑图";
+        EditorWindow.GetWindow(typeof(LogicPanel)).titleContent = new GUIContent("逻辑图");
     }
 
     void OnEnable()
@@ -80,6 +80,7 @@ public class LogicPanel : EditorWindow
         GUILayout.Label("逻辑图:" + logicBox.name);
         GUILayout.Space(40);
         LogicObject tempObj = EditorGUILayout.ObjectField("物体", logicObject, typeof(LogicObject), true, GUILayout.Width(200)) as LogicObject;
+        GUILayout.Space(50);
         logicBox.BoxWidth = EditorGUILayout.FloatField("宽:", logicBox.BoxWidth);
         logicBox.BoxHeight = EditorGUILayout.FloatField("高:", logicBox.BoxHeight);
 
@@ -156,10 +157,15 @@ public class LogicPanel : EditorWindow
             return;
         }
         path = path.Replace(defPath, "Assets/ProjectAssets/Logic");
+        if (path == AssetDatabase.GetAssetPath(logicBox))
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            return;
+        }
         AssetDatabase.CreateAsset(logicBox, path);
         AssetDatabase.AddObjectToAsset(logicBox.DefaultNode, path);
         logicBox.LogicNodeList.ForEach(x => AssetDatabase.AddObjectToAsset(x, path));
-
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
     }
