@@ -74,7 +74,7 @@ public class LogicObject : LogicObjectBase
         if (this.AutoStart)
         {
             this.IsProcess = true;
-            this.CurrentLogicBox.startNode.Begin(data);
+            this.CurrentLogicBox.DefaultNode.Begin(data);
         }
     }
 

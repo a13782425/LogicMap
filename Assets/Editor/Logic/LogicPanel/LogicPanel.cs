@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEditor;
+using System;
 
 public class LogicPanel : EditorWindow
 {
@@ -9,9 +10,11 @@ public class LogicPanel : EditorWindow
     public static LogicObject logicObject;
 
     public Vector3 scroll;
-    public float logicHeight = 2000;
-    public float logicWidth = 2000;
+    //public float logicHeight = 2000;
+    //public float logicWidth = 2000;
     public Rect logicRect;
+
+    private Rect windowRect;
 
     public LogicNodeBase moveSelect, logicSelect, linkSelect;
     private Vector3 offset = Vector3.zero;
@@ -21,7 +24,7 @@ public class LogicPanel : EditorWindow
 
     public static void ShowLogicMap(LogicObject logic)
     {
-        EditorWindow.GetWindow(typeof(LogicPanel));
+        EditorWindow.GetWindow(typeof(LogicPanel)).title = "逻辑图";
         logicObject = logic;
         if (!Application.isPlaying)
             logic.SetValue();
@@ -37,7 +40,7 @@ public class LogicPanel : EditorWindow
     [MenuItem("Tools/窗口 &4", false, 4)]
     public static void Open()
     {
-        EditorWindow.GetWindow(typeof(LogicPanel));
+        EditorWindow.GetWindow(typeof(LogicPanel)).title = "逻辑图";
     }
 
     void OnEnable()
@@ -48,7 +51,9 @@ public class LogicPanel : EditorWindow
 
     void OnDestroy()
     {
+        Save();
         logicObject = null;
+
     }
 
     void OnSelectionChange()
@@ -68,16 +73,17 @@ public class LogicPanel : EditorWindow
         if (logicBox == null)
             return;
         EditorGUIUtility.labelWidth = 60;
-        Rect windowRect = new Rect(20, 20, position.width - 40, position.height - 60);
+        windowRect = new Rect(20, 20, position.width - 40, position.height - 60);
         mousePos = Event.current.mousePosition;
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("逻辑图:" + logicBox.name);
         GUILayout.Space(40);
         LogicObject tempObj = EditorGUILayout.ObjectField("物体", logicObject, typeof(LogicObject), true, GUILayout.Width(200)) as LogicObject;
-        logicWidth = EditorGUILayout.FloatField("宽:", logicWidth);
-        logicHeight = EditorGUILayout.FloatField("高:", logicHeight);
-        logicRect = new Rect(0, 0, logicWidth, logicHeight);
+        logicBox.BoxWidth = EditorGUILayout.FloatField("宽:", logicBox.BoxWidth);
+        logicBox.BoxHeight = EditorGUILayout.FloatField("高:", logicBox.BoxHeight);
+
+        logicRect = new Rect(0, 0, logicBox.BoxWidth, logicBox.BoxHeight);
         if (tempObj != logicObject)
             ShowLogicMap(tempObj);
         GUILayout.FlexibleSpace();
@@ -117,6 +123,9 @@ public class LogicPanel : EditorWindow
         if (logicSelect != null && evt.type == EventType.KeyUp && evt.keyCode == KeyCode.Delete)
             RemoveNode(logicSelect);
 
+        if (evt.type == EventType.KeyUp && evt.control && evt.keyCode == KeyCode.S)
+            Save();
+
         GUILayout.BeginArea(new Rect(0, position.height - 40, position.width, 60));
         GUILayout.BeginVertical();
         GUILayout.Label(AssetDatabase.GetAssetPath(logicBox));
@@ -126,6 +135,12 @@ public class LogicPanel : EditorWindow
         GUILayout.EndVertical();
         GUILayout.EndArea();
 
+    }
+
+    private void Save()
+    {
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 
     private void SaveAsTemplate()
@@ -142,7 +157,7 @@ public class LogicPanel : EditorWindow
         }
         path = path.Replace(defPath, "Assets/ProjectAssets/Logic");
         AssetDatabase.CreateAsset(logicBox, path);
-        AssetDatabase.AddObjectToAsset(logicBox.startNode, path);
+        AssetDatabase.AddObjectToAsset(logicBox.DefaultNode, path);
         logicBox.LogicNodeList.ForEach(x => AssetDatabase.AddObjectToAsset(x, path));
 
         AssetDatabase.SaveAssets();
@@ -158,13 +173,18 @@ public class LogicPanel : EditorWindow
         GenericMenu menu = new GenericMenu();
         if (logicSelect != null)
             ShowNodeOption(menu);
-        else
+        else if (windowRect.Contains(mousePos))
             LogicPanelUtility.ShowCreateMenu(menu, Add, mousePos + scroll);
         menu.ShowAsContext();
     }
 
     private void RemoveNode(LogicNodeBase node)
     {
+        if (node.IsDefault)
+        {
+            EditorUtility.DisplayDialog("移除错误", "不能移除开始Node,请更换开始Node", "确定");
+            return;
+        }
         logicBox.LogicNodeList.Remove(node);
         node.OnRemove(logicObject.Value);
         DestroyImmediate(node, true);
@@ -181,8 +201,18 @@ public class LogicPanel : EditorWindow
         logicSelect.OnGenericMenu(menu);
         logicSelect.OnGenericMenu(menu, () => linkSelect = logicSelect);
         menu.AddSeparator("");
-        menu.AddItem(new GUIContent("选择节点"), false, () => Selection.activeObject = logicSelect);
-        if (!(logicSelect is StartNode))
+        menu.AddItem(new GUIContent("设置默认"), false, () =>
+        {
+            logicBox.LogicNodeList.Remove(logicSelect);
+            logicBox.LogicNodeList.Add(logicBox.DefaultNode);
+            logicBox.DefaultNode.DefaultColor = Color.white;
+            logicBox.DefaultNode.IsDefault = false;
+            logicSelect.IsDefault = true;
+            logicBox.DefaultNode = logicSelect;
+            logicSelect.DefaultColor = Color.green;
+            Save();
+        });
+        //if (!(logicSelect is StartNode))
         {
             menu.AddItem(new GUIContent("删除" + logicSelect.ShowName), false, () => RemoveNode(logicSelect));
             menu.AddItem(new GUIContent("打开脚本"), false, () =>
@@ -227,8 +257,8 @@ public class LogicPanel : EditorWindow
         logicSelect = null;
 
         logicBox.LogicNodeList.ForEach(x => { if (x.OnDetectRect(detectPos)) crtSelect = x; });
-        if (logicBox.startNode.OnDetectRect(detectPos))
-            logicSelect = logicBox.startNode;
+        if (logicBox.DefaultNode.OnDetectRect(detectPos))
+            crtSelect = logicBox.DefaultNode;
 
         if (crtSelect == null)
             return;
@@ -249,5 +279,4 @@ public class LogicPanel : EditorWindow
     {
         Repaint();
     }
-
 }

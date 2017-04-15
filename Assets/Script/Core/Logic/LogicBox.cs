@@ -7,7 +7,14 @@ public class LogicBox : ScriptableObject
 {
     public List<LogicNodeBase> LogicNodeList = new List<LogicNodeBase>();
     public int idSet = 0;
-    public StartNode startNode = null;
+    //public StartNode startNode = null;
+
+#if UNITY_EDITOR
+    public float BoxHeight = 2000;
+    public float BoxWidth = 2000;
+#endif
+
+    public LogicNodeBase DefaultNode = null;
 
     private ToggleAction terminated = new ToggleAction();
 
@@ -18,8 +25,12 @@ public class LogicBox : ScriptableObject
 
     void OnEnable()
     {
-        if (startNode == null)
-            startNode = ScriptableObject.CreateInstance<StartNode>();
+#if UNITY_EDITOR
+        if (DefaultNode == null)
+            DefaultNode = ScriptableObject.CreateInstance<StartNode>();
+        DefaultNode.IsDefault = true;
+        DefaultNode.DefaultColor = Color.green;
+#endif
     }
 
     public void OnSetValue(List<LogicValue> logicValue)
@@ -55,7 +66,12 @@ public class LogicBox : ScriptableObject
 
     public void Begin(LogicData data)
     {
-        startNode.Begin(data);
+        if (DefaultNode == null)
+        {
+            Debug.LogError("没有启动的Node");
+            return;
+        }
+        DefaultNode.Begin(data);
         terminated.Set(() => LogicNodeList.ForEach(x => x.OnTerminated(data)));
     }
 
@@ -72,10 +88,10 @@ public class LogicBox : ScriptableObject
 #if UNITY_EDITOR
     public void OnGUI()
     {
-        startNode.OnDrawLink();
+        DefaultNode.OnDrawLink();
         LogicNodeList.ForEach(x => x.OnDrawLink());
 
-        startNode.OnEditorGUI();
+        DefaultNode.OnEditorGUI();
         LogicNodeList.ForEach(x => x.OnEditorGUI());
     }
 #endif

@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[LogicNode("添加 开始/开始")]
 public class StartNode : LogicNodeBase
 {
     public override void OnEnable()
     {
+        ShowName = "开始";
         Pos = new Vector2(80, 40);
+        HalfSize = new Vector2(60, 20);
     }
 
 #if UNITY_EDITOR
@@ -17,16 +20,16 @@ public class StartNode : LogicNodeBase
 
     public override void OnEditorGUI()
     {
-        GUI.color = Color.green;
+        GUI.color = DefaultColor;
         GUILayout.BeginArea(GetMyRect(), "Start", "button");
         GUILayout.EndArea();
         GUI.color = Color.white;
     }
 
-    protected override Rect GetMyRect()
-    {
-        return new Rect(20, 20, 120, 40);
-    }
+    //protected override Rect GetMyRect()
+    //{
+    //    return new Rect(20, 20, 120, 40);
+    //}
 
 #endif
 }

@@ -14,6 +14,10 @@ public class LogicNodeBase : ScriptableObject
     public Vector2 Pos = Vector2.zero;
     public Vector2 HalfSize = new Vector2(80, 25);
 
+    public Color DefaultColor = Color.white;
+
+    public bool IsDefault = false;
+
     public List<LogicNodeBase> Link = new List<LogicNodeBase>();
 
     protected LogicValue logicValue;
@@ -140,11 +144,12 @@ public class LogicNodeBase : ScriptableObject
     public virtual void OnEditorGUI()
     {
         UnityEditor.Undo.RecordObject(this, "Logic");
+        GUI.color = DefaultColor;
         GUILayout.BeginArea(GetMyRect(), "", "button");
         GUILayout.Label(ShowName);
         OnGUI();
         GUILayout.EndArea();
-
+        GUI.color = Color.white;
     }
 
     protected virtual void OnGUI()
