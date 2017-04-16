@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum LogicEvent
+namespace Logic.Core
 {
-    Start,
-    End
+    public enum LogicEvent
+    {
+        Start,
+        End
+    }
 }

@@ -4,31 +4,34 @@ using System;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
-[Serializable]
-public class LogicValue
+namespace Logic.Core
 {
-
-    public Object Obj;
-
-    public int GUID = -1;
-
-    public bool HasData { get { return data != null; } }
-
-    public List<Action> CallBack = new List<Action>();
-
-    private object data;
-    public T GetObj<T>() where T : Object
+    [Serializable]
+    public class LogicValue
     {
-        return Obj as T;
-    }
 
-    public void SetData(object data)
-    {
-        this.data = data;
-    }
+        public Object Obj;
 
-    public T GetData<T>()
-    {
-        return (T)this.data;
+        public int GUID = -1;
+
+        public bool HasData { get { return data != null; } }
+
+        public List<Action> CallBack = new List<Action>();
+
+        private object data;
+        public T GetObj<T>() where T : Object
+        {
+            return Obj as T;
+        }
+
+        public void SetData(object data)
+        {
+            this.data = data;
+        }
+
+        public T GetData<T>()
+        {
+            return (T)this.data;
+        }
     }
 }

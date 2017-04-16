@@ -3,83 +3,86 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public class LogicObject : LogicObjectBase
+namespace Logic.Core
 {
-
-    public List<LogicValue> Value = new List<LogicValue>();
-
-    public bool AutoStart = false;
-
-    public LogicBox CurrentLogicBox;
-
-    public List<Action<LogicEvent>> LogicEventList = new List<Action<LogicEvent>>();
-
-    public bool IsProcess { get; private set; }
-
-    private LogicData data;
-    public static void TerminateAll()
+    public class LogicObject : LogicObjectBase
     {
-        UnityEngine.Object[] logicObj = UnityEngine.Object.FindObjectsOfType(typeof(LogicObject));
-        int length = logicObj.Length;
-        for (int i = 0; i < length; i++)
+
+        public List<LogicValue> Value = new List<LogicValue>();
+
+        public bool AutoStart = false;
+
+        public LogicBox CurrentLogicBox;
+
+        public List<Action<LogicEvent>> LogicEventList = new List<Action<LogicEvent>>();
+
+        public bool IsProcess { get; private set; }
+
+        private LogicData data;
+        public static void TerminateAll()
         {
-            (logicObj[i] as LogicObject).Terminate();
+            UnityEngine.Object[] logicObj = UnityEngine.Object.FindObjectsOfType(typeof(LogicObject));
+            int length = logicObj.Length;
+            for (int i = 0; i < length; i++)
+            {
+                (logicObj[i] as LogicObject).Terminate();
+            }
         }
-    }
 
-    public void SetValue()
-    {
-        if (CurrentLogicBox == null)
+        public void SetValue()
         {
-            Value = new List<LogicValue>();
-            return;
+            if (CurrentLogicBox == null)
+            {
+                Value = new List<LogicValue>();
+                return;
+            }
+            CurrentLogicBox.OnSetValue(Value);
         }
-        CurrentLogicBox.OnSetValue(Value);
-    }
 
-    public void SendEvent(LogicEvent logicEvent)
-    {
-        LogicEventList.ForEach(x => x(logicEvent));
-    }
-
-    public LogicValue AddValue()
-    {
-        LogicValue temp = new LogicValue();
-        Value.Add(temp);
-        return temp;
-    }
-
-    public void Terminate()
-    {
-        IsProcess = false;
-    }
-
-    public override void Begin()
-    {
-        Debug.Log("Begin " + name);
-        IsProcess = true;
-        SendEvent(LogicEvent.Start);
-        CurrentLogicBox.Begin(data);
-    }
-
-    public override void End()
-    {
-        IsProcess = false;
-        CurrentLogicBox.OnTerminated();
-        base.End();
-        SendEvent(LogicEvent.End);
-    }
-
-    void Awake()
-    {
-        SetValue();
-        data = new LogicData(this);
-        CurrentLogicBox.Init(data);
-        if (this.AutoStart)
+        public void SendEvent(LogicEvent logicEvent)
         {
-            this.IsProcess = true;
-            this.CurrentLogicBox.DefaultNode.Begin(data);
+            LogicEventList.ForEach(x => x(logicEvent));
         }
-    }
 
+        public LogicValue AddValue()
+        {
+            LogicValue temp = new LogicValue();
+            Value.Add(temp);
+            return temp;
+        }
+
+        public void Terminate()
+        {
+            IsProcess = false;
+        }
+
+        public override void Begin()
+        {
+            Debug.Log("Begin " + name);
+            IsProcess = true;
+            SendEvent(LogicEvent.Start);
+            CurrentLogicBox.Begin(data);
+        }
+
+        public override void End()
+        {
+            IsProcess = false;
+            CurrentLogicBox.OnTerminated();
+            base.End();
+            SendEvent(LogicEvent.End);
+        }
+
+        void Awake()
+        {
+            SetValue();
+            data = new LogicData(this);
+            CurrentLogicBox.Init(data);
+            if (this.AutoStart)
+            {
+                this.IsProcess = true;
+                this.CurrentLogicBox.DefaultNode.Begin(data);
+            }
+        }
+
+    } 
 }
