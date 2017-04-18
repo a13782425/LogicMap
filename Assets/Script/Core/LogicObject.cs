@@ -67,7 +67,7 @@ namespace Logic.Core
         public override void End()
         {
             IsProcess = false;
-            CurrentLogicBox.OnTerminated();
+            //CurrentLogicBox.OnTerminated();
             base.End();
             SendEvent(LogicEvent.End);
         }

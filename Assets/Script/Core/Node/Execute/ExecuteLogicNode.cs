@@ -14,26 +14,26 @@ namespace Logic.Core.Node
             }
         }
 
-        public override void Begin(LogicData data)
-        {
-            base.Begin(data);
-            LogicObject obj = GetValue<LogicObject>(data);
-            obj.Begin();
-            base.Continue(data);
-        }
+        //public override void Begin(LogicData data)
+        //{
+        //    base.Begin(data);
+        //    LogicObject obj = GetValue<LogicObject>(data);
+        //    obj.Begin();
+        //    base.Continue(data);
+        //}
 
 
 #if UNITY_EDITOR
-        public override void OnEnable()
-        {
-            base.OnEnable();
-            ShowName = "执行";
-        }
+        //public override void OnEnable()
+        //{
+        //    base.OnEnable();
+        //    ShowName = "执行";
+        //}
 
-        protected override void OnGUI()
-        {
-            Assign<LogicObject>(logicValue, "逻辑图");
-        }
+        //protected override void OnGUI()
+        //{
+        //    Assign<LogicObject>(logicValue, "逻辑图");
+        //}
 #endif
     }
 }

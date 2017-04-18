@@ -8,9 +8,12 @@ namespace Logic.Core.Node
     {
         public string log = "触发";
 
-        public override void OnEnable()
+        public override string ShowName
         {
-            ShowName = "日志";
+            get
+            {
+                return "日志";
+            }
         }
 
         public override void Begin(LogicData data)

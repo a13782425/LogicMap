@@ -8,17 +8,17 @@ namespace Logic.Core.Editor
 {
     public static class LogicPanelUtility
     {
-        private static Action<GenericMenu, Action<LogicNodeBase>, Vector2> OnShowMenu = null;
-        public static void ShowCreateMenu(GenericMenu menu, Action<LogicNodeBase> add, Vector2 mousePos)
+        private static Action<GenericMenu, LogicObject, Action<LogicNodeBase>, Vector2> OnShowMenu = null;
+        public static void ShowCreateMenu(GenericMenu menu, LogicObject logic, Action<LogicNodeBase> add, Vector2 mousePos)
         {
             if (OnShowMenu == null)
-                SetMenu();
-            OnShowMenu(menu, add, mousePos);
+                SetMenu(logic);
+            OnShowMenu(menu, logic, add, mousePos);
         }
 
-        private static void SetMenu()
+        private static void SetMenu(LogicObject logic)
         {
-            List<Action<GenericMenu, Action<LogicNodeBase>, Vector2>> setAct = new List<Action<GenericMenu, Action<LogicNodeBase>, Vector2>>();
+            List<Action<GenericMenu, LogicObject, Action<LogicNodeBase>, Vector2>> setAct = new List<Action<GenericMenu, LogicObject, Action<LogicNodeBase>, Vector2>>();
             foreach (Type type in typeof(LogicNodeBase).Assembly.GetTypes())
             {
                 if (!type.IsClass)
@@ -29,17 +29,17 @@ namespace Logic.Core.Editor
                     if (item.GetType() == typeof(LogicNodeAttribute))
                     {
                         LogicNodeAttribute node = item as LogicNodeAttribute;
-                        setAct.Add((menu, add, mousePos) => menu.Add(node.MenuText, classType, add, mousePos));
+                        setAct.Add((menu, lo, add, mousePos) => menu.Add(logic, node.MenuText, classType, add, mousePos));
                         break;
                     }
                 }
             }
-            OnShowMenu = (menu, add, mousePos) => setAct.ForEach(x => x(menu, add, mousePos));
+            OnShowMenu = (menu, lo, add, mousePos) => setAct.ForEach(x => x(menu, lo, add, mousePos));
         }
 
-        private static void Add(this GenericMenu menu, string text, Type type, Action<LogicNodeBase> add, Vector2 mousePos)
+        private static void Add(this GenericMenu menu, LogicObject logic, string text, Type type, Action<LogicNodeBase> add, Vector2 mousePos)
         {
-            menu.AddItem(new GUIContent(text), false, () => { add(LogicNodeBase.Create(mousePos, type)); });
+            menu.AddItem(new GUIContent(text), false, () => { add(LogicNodeBase.Create(logic, mousePos, type)); });
         }
     }
 }

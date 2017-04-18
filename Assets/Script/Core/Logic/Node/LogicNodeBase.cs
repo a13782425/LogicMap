@@ -9,7 +9,8 @@ namespace Logic.Core
     {
         public int Guid = 0;
 
-        public string ShowName = "逻辑节点";
+        private string _showName = "逻辑节点";
+        public virtual string ShowName { get { return _showName; } }
         public string Common = "";
 
         public Vector2 Pos = Vector2.zero;
@@ -21,22 +22,36 @@ namespace Logic.Core
 
         public List<LogicNodeBase> Link = new List<LogicNodeBase>();
 
-        protected LogicValue logicValue;
+        //protected LogicValue logicValue;
+
+        protected LogicObject CurrentLogicObject = null;
+
+        protected LogicData ShareData;
 
         public virtual bool HasValue { get { return false; } }
 
         public virtual bool HasSwitch { get { return false; } }
 
-        public static LogicNodeBase Create(Vector2 pos, Type type)
+        public static LogicNodeBase Create(LogicObject obj, Vector2 pos, Type type)
         {
             LogicNodeBase nb = ScriptableObject.CreateInstance(type) as LogicNodeBase;
             nb.Pos = pos;
+            nb.CurrentLogicObject = obj;
             return nb;
+        }
+
+        public void InitData()
+        {
+            this.ShareData = new LogicData(this.Guid, this.CurrentLogicObject);
         }
 
         public virtual void SetValue(LogicValue value)
         {
-            logicValue = value;
+            if (this.ShareData == null)
+            {
+                this.ShareData = new LogicData(this.Guid, this.CurrentLogicObject);
+            }
+            this.ShareData.SetValue(value);
         }
         public virtual void Init(LogicData data)
         {
@@ -59,49 +74,49 @@ namespace Logic.Core
 
         public void Continue(List<LogicNodeBase> nodeLink, LogicData data)
         {
-            if (data.IsProcess && (nodeLink != null))
+            if ((nodeLink != null))
                 nodeLink.ForEach(x => { if (x != null) x.Begin(data); });
 #if UNITY_EDITOR
             else
                 Debug.LogWarning("执行错误：" + data.LogicContainer.name, data.LogicContainer);
 #endif
         }
-        public virtual bool IsValueSet(List<LogicValue> valueList)
-        {
-            if (!HasValue)
-                return true;
-            return valueList.Contains(logicValue);
-        }
+        //public virtual bool IsValueSet(List<LogicValue> valueList)
+        //{
+        //    if (!HasValue)
+        //        return true;
+        //    return valueList.Contains(logicValue);
+        //}
 
-        public void GetLogicValue(Func<LogicValue> OnGetValue)
-        {
-            if (!HasValue)
-                return;
-            logicValue = OnGetValue();
-            logicValue.GUID = this.Guid;
-        }
+        //public void GetLogicValue(Func<LogicValue> OnGetValue)
+        //{
+        //    if (!HasValue)
+        //        return;
+        //    logicValue = OnGetValue();
+        //    logicValue.GUID = this.Guid;
+        //}
 
         public virtual void OnTerminated(LogicData data) { }
 
-        protected LogicValue GetLogicValue(LogicData data)
-        {
-            if (!data.ContainsKey(this.Guid))
-                throw new System.Exception("");
-            return data[this.Guid];
-        }
+        //protected LogicValue GetLogicValue(LogicData data)
+        //{
+        //    if (!data.ContainsKey(this.Guid))
+        //        throw new System.Exception("");
+        //    return data[this.Guid];
+        //}
 
-        protected T GetValue<T>(LogicData data) where T : UnityEngine.Object
-        {
-            if (!data.ContainsKey(this.Guid))
-                Exception("Not Exist");
-            LogicValue value = data[this.Guid];
-            if (value == null)
-                Exception("assigned");
-            T t = value.Obj as T;
-            if (t == null)
-                Exception("match");
-            return t;
-        }
+        //protected T GetValue<T>(LogicData data) where T : UnityEngine.Object
+        //{
+        //    if (!data.ContainsKey(this.Guid))
+        //        Exception("Not Exist");
+        //    LogicValue value = data[this.Guid];
+        //    if (value == null)
+        //        Exception("assigned");
+        //    T t = value.Obj as T;
+        //    if (t == null)
+        //        Exception("match");
+        //    return t;
+        //}
         protected void Exception(string msg)
         {
             Debug.LogError("Error_" + ShowName + " : " + msg, this);
@@ -110,11 +125,17 @@ namespace Logic.Core
 
 
 #if UNITY_EDITOR
+
         public virtual void OnRemove(List<LogicValue> value)
         {
-            if (logicValue != null)
-                value.Remove(logicValue);
+            
         }
+
+        //public virtual void OnRemove(List<LogicValue> value)
+        //{
+        //    if (logicValue != null)
+        //        value.Remove(logicValue);
+        //}
 
         public virtual void OnGenericMenu(UnityEditor.GenericMenu menu)
         {
@@ -167,16 +188,18 @@ namespace Logic.Core
             return new Rect(Pos.x - HalfSize.x, Pos.y - HalfSize.y, HalfSize.x * 2, HalfSize.y * 2);
         }
 
-        public void Assign<T>(LogicValue value, string title) where T : UnityEngine.Object
+        public void Assign<T>( string title,string argName) where T : UnityEngine.Object
         {
-            if (value == null)
-            {
-                UnityEditor.EditorGUILayout.LabelField(ShowName + "[Not Assigned]");
-                return;
-            }
+            T t = EditorGUILayout.ObjectField(new GUIContent(title), ShareData[argName + "_" + Guid].Data, typeof(T), true) as T;
+            ShareData[argName + "_" + Guid].Data = t;
+            //if (value == null)
+            //{
+            //    UnityEditor.EditorGUILayout.LabelField(ShowName + "[Not Assigned]");
+            //    return;
+            //}
 
-            T t = UnityEditor.EditorGUILayout.ObjectField(new GUIContent(title), value.Obj, typeof(T), true) as T;
-            value.Obj = t;
+            //T t = UnityEditor.EditorGUILayout.ObjectField(new GUIContent(title), value.Obj, typeof(T), true) as T;
+            //value.Obj = t;
             //if (t == null)
             //    UnityEditor.EditorGUILayout.LabelField(ShowName + "[Not Assigned]");
         }

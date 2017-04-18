@@ -29,7 +29,7 @@ namespace Logic.Core.Editor
             EditorWindow.GetWindow(typeof(LogicPanel)).titleContent = new GUIContent("逻辑图");
             logicObject = logic;
             if (!Application.isPlaying)
-                logic.SetValue();
+                logicObject.SetValue();
             string boxPath = AssetDatabase.GetAssetPath(logic.CurrentLogicBox);
             if (!string.IsNullOrEmpty(boxPath))
             {
@@ -119,7 +119,7 @@ namespace Logic.Core.Editor
 
             if (logicSelect != null && evt.control && evt.type == EventType.KeyUp && evt.keyCode == KeyCode.D)
             {
-                LogicNodeBase node = LogicNodeBase.Create(mousePos + scroll, logicSelect.GetType());
+                LogicNodeBase node = LogicNodeBase.Create(logicObject, mousePos + scroll, logicSelect.GetType());
                 Add(node);
             }
 
@@ -182,7 +182,7 @@ namespace Logic.Core.Editor
             if (logicSelect != null)
                 ShowNodeOption(menu);
             else if (windowRect.Contains(mousePos))
-                LogicPanelUtility.ShowCreateMenu(menu, Add, mousePos + scroll);
+                LogicPanelUtility.ShowCreateMenu(menu, logicObject, Add, mousePos + scroll);
             menu.ShowAsContext();
         }
 
@@ -234,8 +234,8 @@ namespace Logic.Core.Editor
                     {
                         AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guids[0]), typeof(UnityEngine.Object)), -1);
                     }
-                //AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(textBuffer.guid), typeof(UnityEngine.Object)), caretPosition.line + 1);
-            });
+                    //AssetDatabase.OpenAsset(AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(textBuffer.guid), typeof(UnityEngine.Object)), caretPosition.line + 1);
+                });
             }
         }
 
@@ -243,7 +243,8 @@ namespace Logic.Core.Editor
         {
             node.Guid = logicBox.GetNewId();
             logicBox.LogicNodeList.Add(node);
-            node.GetLogicValue(logicObject.AddValue);
+            node.InitData();
+            //node.GetLogicValue(logicObject.AddValue);
 
             string boxPath = AssetDatabase.GetAssetPath(logicBox);
             if (!string.IsNullOrEmpty(boxPath))
